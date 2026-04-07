@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "user-email-input",
+  "componentType": "text-input",
+  "framework": {
+    "name": "vue",
+    "componentRef": "EmailInput.vue"
+  },
+  "bindings": [
+    {
+      "target": "value",
+      "kind": "twoWay",
+      "from": { "source": "state", "path": "form.email" },
+      "to": { "source": "state", "path": "form.email" }
+    },
+    {
+      "target": "visible",
+      "kind": "computed",
+      "from": { "source": "store", "path": "featureFlags.emailCapture" }
+    }
+  ],
+  "validation": [
+    { "field": "value", "type": "required", "message": "Email is required" },
+    { "field": "value", "type": "email", "message": "Must be a valid email" }
+  ],
+  "rbac": {
+    "visibility": {
+      "mode": "allowAny",
+      "roles": ["admin", "support"]
+    },
+    "enabled": {
+      "mode": "denyAny",
+      "permissions": ["user.email.readonly"]
+    }
+  },
+  "api": [
+    {
+      "id": "users.updateEmail",
+      "method": "PATCH",
+      "path": "/api/users/{id}/email",
+      "service": "user-service"
+    }
+  ],
+  "events": [
+    {
+      "event": "onBlur",
+      "handler": {
+        "type": "apiCall",
+        "ref": "users.updateEmail"
+      }
+    }
+  ],
+  "extensions": {
+    "designSystem": {
+      "tokenRef": "input.default"
+    }
+  }
+}

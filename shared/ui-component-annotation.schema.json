@@ -1,0 +1,257 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/ui-component-annotation.schema.json",
+  "title": "UI Component Annotation",
+  "description": "Framework-agnostic metadata for annotating UI components with bindings, validation, RBAC, API references, and event hooks.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["componentType", "bindings"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "default": "1.0.0"
+    },
+    "id": {
+      "type": "string"
+    },
+    "componentType": {
+      "type": "string"
+    },
+    "framework": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "componentRef": { "type": "string" },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "bindings": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/binding" }
+    },
+    "validation": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/validationRule" }
+    },
+    "rbac": {
+      "$ref": "#/$defs/rbacPolicy"
+    },
+    "api": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/apiRef" }
+    },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/eventHook" }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "valueRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "path"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": ["state", "props", "context", "store", "query", "route", "local", "session", "constant", "custom"]
+        },
+        "path": { "type": "string" },
+        "expression": { "type": "string" }
+      }
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "kind", "from"],
+      "properties": {
+        "target": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["oneWay", "twoWay", "computed", "action"]
+        },
+        "from": { "$ref": "#/$defs/valueRef" },
+        "to": { "$ref": "#/$defs/valueRef" },
+        "transform": { "type": "string" },
+        "defaultValue": {},
+        "nullable": {
+          "type": "boolean",
+          "default": true
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "validationRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "field": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["required", "min", "max", "minLength", "maxLength", "pattern", "email", "url", "custom", "async"]
+        },
+        "value": {},
+        "message": { "type": "string" },
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warning", "info"],
+          "default": "error"
+        },
+        "when": { "type": "string" },
+        "validatorRef": { "type": "string" },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "rbacPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "visibility": { "$ref": "#/$defs/accessCondition" },
+        "enabled": { "$ref": "#/$defs/accessCondition" },
+        "redaction": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mask": {
+              "type": "boolean",
+              "default": false
+            },
+            "strategy": {
+              "type": "string",
+              "enum": ["none", "partial", "full", "custom"],
+              "default": "none"
+            },
+            "handlerRef": { "type": "string" }
+          }
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "accessCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["allowAny", "allowAll", "denyAny", "denyAll", "expression"],
+          "default": "allowAny"
+        },
+        "roles": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "permissions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "expression": { "type": "string" }
+      }
+    },
+    "apiRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "method", "path"],
+      "properties": {
+        "id": { "type": "string" },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"]
+        },
+        "path": { "type": "string" },
+        "service": { "type": "string" },
+        "requestBinding": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/binding" }
+        },
+        "responseBinding": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/binding" }
+        },
+        "auth": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "required": {
+              "type": "boolean",
+              "default": true
+            },
+            "scopes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "openApiRef": { "type": "string" },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "eventHook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event", "handler"],
+      "properties": {
+        "event": { "type": "string" },
+        "phase": {
+          "type": "string",
+          "enum": ["before", "after", "around"],
+          "default": "after"
+        },
+        "handler": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "ref"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["function", "action", "workflow", "apiCall", "custom"]
+            },
+            "ref": { "type": "string" },
+            "args": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "condition": { "type": "string" },
+        "debounceMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "throttleMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}
